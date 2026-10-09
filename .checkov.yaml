@@ -2,4 +2,10 @@ framework:
   - terraform
 compact: true
 quiet: true
-skip-check: []
+skip-check:
+  - CKV_AZURE_59    # La cuenta sirve un sitio web estatico publico: debe aceptar trafico de Internet. El acceso anonimo a otros contenedores esta bloqueado (allow_nested_items_to_be_public = false), solo HTTPS y TLS 1.2.
+  - CKV2_AZURE_33   # Un endpoint privado haria inalcanzable el sitio publico y exige VNet + DNS privado con costo; no hay datos privados que aislar en esta cuenta.
+  - CKV2_AZURE_1    # El contenido es un HTML publico sin datos sensibles; Azure ya cifra en reposo con claves de Microsoft (AES-256). Una CMK exige Key Vault, rotacion y permisos extra sin beneficio real aqui.
+  - CKV_AZURE_206   # Entornos de laboratorio reproducibles: Git es la fuente de verdad y un apply recrea el sitio. LRS es lo mas barato; GRS/ZRS duplicaria el costo sin necesidad.
+  - CKV_AZURE_33    # La cuenta no usa el servicio de colas (Queue): no existe ninguna cola, asi que no hay actividad que registrar; activarlo solo agregaria costo.
+  - CKV2_AZURE_40   # Riesgo aceptado temporalmente: el provider azurerm sube index.html a $web y configura el sitio estatico con la clave de cuenta (Shared Key). Plan: storage_use_azuread = true + Storage Blob Data Contributor a la identidad (ver Pregunta 5).
